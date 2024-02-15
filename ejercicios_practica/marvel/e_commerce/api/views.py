@@ -276,3 +276,31 @@ class DeleteWishListAPIView(DestroyAPIView):
     serializer_class = WishListSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAdminUser,)
+
+class LoginUserAPIView(APIView):
+    authentication_classes = ()
+    permission_classes = ()
+    def post(self, request):
+        # Realizamos validaciones a través del serializador
+        user_login_serializer = UserLoginSerializer(data=request.data)
+        if user_login_serializer.is_valid():
+            _username = request.data.get('username')
+            _password = request.data.get('password')
+
+            # Si el usuario existe y sus credenciales son validas,
+            # tratamos de obtener el TOKEN:
+            _account = authenticate(username=_username, password=_password)
+            if _account:
+                _token, _created = Token.objects.get_or_create(user=_account)
+                return Response(
+                    data=TokenSerializer(instance=_token, many=False).data,
+                    status=status.HTTP_200_OK
+                )
+            return Response(
+                data={'error': 'Invalid Credentials.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            data=user_login_serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )

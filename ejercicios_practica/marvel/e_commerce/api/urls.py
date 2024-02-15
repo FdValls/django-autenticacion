@@ -30,6 +30,6 @@ urlpatterns = [
     path('wishlist/create/', PostWishListAPIView.as_view(), name='post_wishlist_api_view'),
     path('wishlist/update/<int:pk>/', UpdateWishListAPIView .as_view(), name='update_wishlist_api_view'),
     path('wishlist/delete/<int:pk>/', DeleteWishListAPIView.as_view(), name='delete_wishlist_api_view'),
-    
-     path('users/list/', UserListAPIView.as_view(), name='user_class_list_api_view'),
+    path('login/', LoginUserAPIView.as_view(), name="login"),
+    path('users/list/', UserListAPIView.as_view(), name='user_class_list_api_view'),
 ]
