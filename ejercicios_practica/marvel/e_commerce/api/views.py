@@ -19,12 +19,15 @@ from rest_framework.generics import (
     GenericAPIView,
     UpdateAPIView
 )
+
+from rest_framework.authentication import BasicAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 from rest_framework.views import APIView
 
 from e_commerce.api.serializers import *
-from e_commerce.models import Comic
+from e_commerce.models import Comic, WishList
 
 
 @api_view(http_method_names=['GET'])
@@ -225,3 +228,49 @@ class GetOneMarvelComicAPIView(RetrieveAPIView):
 #         return Response(
 #             data=serializer.data, status=status.HTTP_200_OK
 #         )
+
+class UserListAPIView(ListAPIView):
+    serializer_class = UserSerializer
+    queryset = User.objects.all().order_by('username')
+
+class GetWishListAPIView(APIView):
+    serializer_class = WishListSerializer
+    permission_classes = (AllowAny,)
+
+    def get(self, request, pk, *args, **kwargs):
+        wishlist_instance = get_object_or_404(WishList, id=pk)
+        serializer = self.serializer_class(wishlist_instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class PostWishListAPIView(CreateAPIView):
+    serializer_class = WishListSerializer
+    queryset = WishList.objects.all()
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (BasicAuthentication,)
+
+class UpdateWishListAPIView(UpdateAPIView):
+    
+    queryset = WishList.objects.all()
+
+    serializer_class = WishListSerializer
+    permission_classes = (IsAuthenticated | IsAdminUser,)
+    authentication_classes = (TokenAuthentication,)
+    
+    def put(self, request, *args, **kwargs):
+        _serializer = self.get_serializer(
+            instance=self.get_object(),
+            data=request.data,
+            many=False,
+            partial=True
+        )
+        if _serializer.is_valid():
+            _serializer.save()
+            return Response(data=_serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            data=_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+        )
+
+class DeleteWishListAPIView(DestroyAPIView):
+    serializer_class = WishListSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAdminUser,)
