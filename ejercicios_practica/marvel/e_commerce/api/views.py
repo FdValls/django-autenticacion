@@ -271,6 +271,8 @@ class UpdateWishListAPIView(UpdateAPIView):
         )
 
 class DeleteWishListAPIView(DestroyAPIView):
+    
+    queryset = WishList.objects.all()
     serializer_class = WishListSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAdminUser,)
